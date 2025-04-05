@@ -20,7 +20,6 @@ jobs:
                -c "CREATE DATABASE \"${{ secrets.DB_NAME }}\";" || true
 
     #### Добавьте шаг с Flyway-миграциями
-# Шаг 3: Apply migrations with Flyway
     - name: Apply migrations with Flyway
       env:
         DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}

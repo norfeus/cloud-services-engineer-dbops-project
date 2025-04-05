@@ -12,15 +12,33 @@ jobs:
 
     #### Добавьте шаг с Flyway-миграциями
     - name: Apply migrations with Flyway
+      env:
+        DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
+        echo "Checking for migrations..."
+        if [ -z "$(ls -A ./migrations)" ]; then
+          echo "No migrations found. Skipping Flyway."
+          exit 0
+        fi
+
+        echo "Pulling Flyway Docker image..."
+        docker pull flyway/flyway
+
+        echo "Running Flyway migrations..."
         docker run --rm \
           -v $(pwd)/migrations:/flyway/sql \
-          flyway/flyway \
-          -url="jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}" \
-          -user="${{ secrets.DB_USER }}" \
-          -password="${{ secrets.DB_PASSWORD }}" \
-          migrate
+          flyway/flyway migrate \
+          -url=$DB_URL \
+          -user=$DB_USER \
+          -password=$DB_PASSWORD || {
+            echo "Flyway migration failed"
+            exit 1
+          }
 
+        echo "Migrations completed successfully."
+        
     ### Этот шаг оставьте без изменений
     - name: Download and setup autotests binaries
       run: |

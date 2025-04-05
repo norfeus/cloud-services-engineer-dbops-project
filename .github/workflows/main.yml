@@ -10,7 +10,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Create database if not exists
+      run: |
+        docker run --rm \
+          -e PGPASSWORD=${{ secrets.DB_PASSWORD }} \
+          postgres:latest \
+          psql -h ${{ secrets.DB_HOST }} \
+               -U ${{ secrets.DB_USER }} \
+               -c "CREATE DATABASE \"${{ secrets.DB_NAME }}\";" || true
+
     #### Добавьте шаг с Flyway-миграциями
+# Шаг 3: Apply migrations with Flyway
     - name: Apply migrations with Flyway
       env:
         DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
@@ -32,13 +42,14 @@ jobs:
           flyway/flyway migrate \
           -url=$DB_URL \
           -user=$DB_USER \
-          -password=$DB_PASSWORD || {
+          -password=$DB_PASSWORD \
+          -baselineOnMigrate=true || {
             echo "Flyway migration failed"
             exit 1
           }
 
         echo "Migrations completed successfully."
-        
+
     ### Этот шаг оставьте без изменений
     - name: Download and setup autotests binaries
       run: |

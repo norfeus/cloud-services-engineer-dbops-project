@@ -1,14 +1,11 @@
-ALTER TABLE product
-    ADD price DOUBLE PRECISION,
-    ADD PRIMARY KEY (id);
+alter table product add column if not exists price float8;
+alter table product add constraint pk_product primary key (id); 										
 
-ALTER TABLE orders
-    ADD date_created DATE,
-    ADD PRIMARY KEY (id);
+alter table orders add column if not exists date_created date default CURRENT_DATE;
+alter table orders add constraint pk_order primary key (id); 											
 
-DROP TABLE product_info;
-DROP TABLE orders_date;
+alter table order_product add constraint fk_product foreign key (product_id) references product(id); 	
+alter table order_product add constraint fk_order foreign key (order_id) references orders(id); 		
 
-ALTER TABLE order_product
-    ADD CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES product (id),
-    ADD CONSTRAINT fk_orders_id FOREIGN KEY (order_id) REFERENCES orders (id);
+drop table if exists product_info;
+drop table if exists orders_date;

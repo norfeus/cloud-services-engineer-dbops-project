@@ -19,6 +19,22 @@ jobs:
                -U ${{ secrets.DB_USER }} \
                -c "CREATE DATABASE \"${{ secrets.DB_NAME }}\";" || true
 
+    # Выполнение repair (если необходимо)
+    - name: Run Flyway repair
+      env:
+        DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      run: |
+        echo "Running Flyway repair..."
+        docker run --rm \
+          -v $(pwd)/migrations:/flyway/sql \
+          flyway/flyway repair \
+          -url=${DB_URL} \
+          -user=${DB_USER} \
+          -password=${DB_PASSWORD} \
+          || { echo "Flyway repair failed"; exit 1; }
+
     #### Добавьте шаг с Flyway-миграциями
     - name: Apply migrations with Flyway
       env:

@@ -9,3 +9,4 @@ alter table order_product add constraint fk_order foreign key (order_id) referen
 
 drop table if exists product_info;
 drop table if exists orders_date;
+

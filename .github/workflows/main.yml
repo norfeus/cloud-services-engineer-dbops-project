@@ -6,6 +6,8 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    env:
+      RUN_REPAIR: true # Значение по умолчанию
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -19,12 +21,14 @@ jobs:
                -U ${{ secrets.DB_USER }} \
                -c "CREATE DATABASE \"${{ secrets.DB_NAME }}\";" || true
 
-    # Выполнение repair (если необходимо)
-    - name: Run Flyway repair
+    # Выполнение Flyway repair (опционально)
+    - name: Run Flyway repair (if enabled)
+      if: env.RUN_REPAIR == 'true'
       env:
         DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        RUN_REPAIR: ${{ github.event.inputs.run_repair || 'false' }}
       run: |
         echo "Running Flyway repair..."
         docker run --rm \

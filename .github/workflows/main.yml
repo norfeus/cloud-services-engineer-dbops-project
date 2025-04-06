@@ -28,7 +28,6 @@ jobs:
         DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
         DB_USER: ${{ secrets.DB_USER }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        RUN_REPAIR: ${{ github.event.inputs.run_repair || 'false' }}
       run: |
         echo "Running Flyway repair..."
         docker run --rm \
@@ -39,7 +38,7 @@ jobs:
           -password=${DB_PASSWORD} \
           || { echo "Flyway repair failed"; exit 1; }
 
-    #### Добавьте шаг с Flyway-миграциями
+    #### Шаг с Flyway-миграциями
     - name: Apply migrations with Flyway
       env:
         DB_URL: jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}
@@ -58,7 +57,7 @@ jobs:
         echo "Running Flyway migrations..."
         docker run --rm \
           -v $(pwd)/migrations:/flyway/sql \
-          flyway/flyway migrate -X \
+          flyway/flyway migrate \
           -url=${DB_URL} \
           -user=${DB_USER} \
           -password=${DB_PASSWORD} \

@@ -35,19 +35,14 @@ jobs:
         echo "Pulling Flyway Docker image..."
         docker pull flyway/flyway
 
-        echo "Running Flyway migrations..."
-        docker run --rm \
-          -v $(pwd)/migrations:/flyway/sql \
-          flyway/flyway migrate \
-          -url=$DB_URL \
-          -user=$DB_USER \
-          -password=$DB_PASSWORD \
-          -baselineOnMigrate=true || {
-            echo "Flyway migration failed"
-            exit 1
-          }
+        echo "Running Flyway migrations..."        
+        docker run --rm -v $(pwd)/migrations:/flyway/sql flyway/flyway migrate \
+        -url=jdbc:postgresql://${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }} \
+        -user=${{ secrets.DB_USER }} \
+        -password=${{ secrets.DB_PASSWORD }}
 
         echo "Migrations completed successfully."
+          }        
 
     ### Этот шаг оставьте без изменений
     - name: Download and setup autotests binaries
